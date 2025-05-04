@@ -22,10 +22,20 @@ app.post('/baixar-dados', async (req, res) => {
     const downloadPath = path.join(os.homedir(), 'Downloads');
 
     const browser = await puppeteer.launch({
-      headless: false,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--start-fullscreen']
+      headless: true,
+      executablePath: puppeteer.executablePath(), // ESSENCIAL para Puppeteer >= v19 em ambientes como o Render
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ]
     });
-
+        
     const pages = await browser.pages();
     const page = pages[0];
     await page.bringToFront();
