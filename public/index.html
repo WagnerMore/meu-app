@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Automação FGI PEAC</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f7f7f7;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .logo {
+      width: 220px;
+      height: auto;
+      margin-right: 20px;
+    }
+
+    .titulo-container {
+      text-align: center;
+      flex-grow: 1;
+      margin-right: 120px;
+    }
+
+    .titulo-container h1,
+    .titulo-container h2,
+    .titulo-container h3 {
+      margin: 4px 0;
+      color: #7a003c;
+      font-weight: bold;
+    }
+
+    .conteudo {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0 30px;
+      margin-top: 30px;
+    }
+
+    .explicacao {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .formulario {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    button {
+      padding: 15px;
+      font-size: 18px;
+      background-color: #7a003c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #5c002f;
+    }
+  </style>
+</head>
+<body onclick="forcarFoco()">
+
+  <header>
+    <img class="logo" src="logo-bnb.jpg" alt="Logo Banco do Nordeste" />
+    <div class="titulo-container">
+      <h1>BANCO DO NORDESTE DO BRASIL S.A.</h1>
+      <h2>AMBIENTE DE ADMINISTRAÇÃO DE CRÉDITO</h2>
+      <h3>Célula de Monitoração de Garantias e Seguros Obrigatórios</h3>
+    </div>
+  </header>
+
+  <div class="conteudo">
+    <div class="explicacao">
+      Esta aplicação destina-se a baixar os arquivos das operações garantidas pelo FGI PEAC diretamente do site do BNDES.
+    </div>
+
+    <div class="formulario">
+      <input type="text" id="usuario" placeholder="Usuário" />
+      <input type="password" id="senha" placeholder="Senha" />
+      <button onclick="executarAutomacao()">BAIXAR ARQUIVOS DO BNDES</button>
+    </div>
+  </div>
+
+  <script>
+    const inputUsuario = document.getElementById('usuario');
+    const inputSenha = document.getElementById('senha');
+
+    function executarAutomacao() {
+      const usuario = inputUsuario.value.trim();
+      const senha = inputSenha.value.trim();
+      const botao = document.querySelector('button');
+
+      if (!usuario || !senha) {
+        alert('Por favor, preencha os campos de usuário e senha.');
+        return;
+      }
+
+      localStorage.setItem('usuarioBNDES', usuario);
+      localStorage.setItem('senhaBNDES', senha);
+
+      botao.disabled = true;
+      botao.textContent = 'Executando...';
+
+      fetch('/baixar-dados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario, senha })
+      })
+      .then(res => res.text())
+      .then(texto => {
+        alert(texto);
+        botao.disabled = false;
+        botao.textContent = 'BAIXAR ARQUIVOS DO BNDES';
+      })
+      .catch(err => {
+        alert('Erro ao executar a automação.');
+        botao.disabled = false;
+        botao.textContent = 'BAIXAR ARQUIVOS DO BNDES';
+        console.error(err);
+      });
+    }
+
+    function forcarFoco() {
+      inputUsuario.focus();
+      inputUsuario.setSelectionRange(inputUsuario.value.length, inputUsuario.value.length);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const usuarioSalvo = localStorage.getItem('usuarioBNDES');
+      const senhaSalva = localStorage.getItem('senhaBNDES');
+
+      if (usuarioSalvo) inputUsuario.value = usuarioSalvo;
+      if (senhaSalva) inputSenha.value = senhaSalva;
+
+      setTimeout(() => {
+        inputUsuario.focus();
+        inputUsuario.setSelectionRange(inputUsuario.value.length, inputUsuario.value.length);
+      }, 300);
+    });
+  </script>
+
+</body>
+</html>
