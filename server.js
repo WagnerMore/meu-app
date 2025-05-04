@@ -1,19 +1,17 @@
 const express = require('express');
 const path = require('path');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core'); // ✅ alterado para puppeteer-core
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.json()); // Permite ler JSON vindo do body
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rota principal
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota de automação
 app.post('/baixar-dados', async (req, res) => {
   try {
     const os = require('os');
@@ -22,8 +20,8 @@ app.post('/baixar-dados', async (req, res) => {
     const downloadPath = path.join(os.homedir(), 'Downloads');
 
     const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: puppeteer.executablePath(), // ESSENCIAL para Puppeteer >= v19 em ambientes como o Render
+      headless: 'new', // ✅ mais seguro com versões recentes
+      executablePath: '/usr/bin/google-chrome-stable', // ✅ caminho fixo usado na Render
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -35,11 +33,11 @@ app.post('/baixar-dados', async (req, res) => {
         '--disable-gpu'
       ]
     });
-        
+
     const pages = await browser.pages();
     const page = pages[0];
     await page.bringToFront();
-    
+
     const dimensions = await page.evaluate(() => {
       return {
         width: window.screen.availWidth,
@@ -51,6 +49,7 @@ app.post('/baixar-dados', async (req, res) => {
     await page.goto('https://web.bndes.gov.br/fg2/#/login?returnUrl=%2Fhome', { waitUntil: 'domcontentloaded' });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    // ... continua seu código
     // Tentar clicar no botão "Entendi"
     const lgpdBtn = await page.$('#confirmacao_lgpd, button.cookie__botao');
     if (lgpdBtn) {
